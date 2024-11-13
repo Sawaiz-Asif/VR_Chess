@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4626390214331530}
   - component: {fileID: 33283243407640938}
   - component: {fileID: 23450358156907978}
+  - component: {fileID: -4099454220499383033}
   - component: {fileID: 7984940746474747458}
   - component: {fileID: -8859659937592027471}
-  - component: {fileID: -4099454220499383033}
   m_Layer: 0
   m_Name: Bishop
   m_TagString: Untagged
@@ -86,6 +86,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &-4099454220499383033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1028868664329696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6287478b4fcd5ad4eaa476e9d9396f77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  availableMoves: []
 --- !u!114 &7984940746474747458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,16 +123,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72f21228b53c56a4a9dd6bd17045eb16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-4099454220499383033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1028868664329696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6287478b4fcd5ad4eaa476e9d9396f77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  availableMoves: []
