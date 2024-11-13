@@ -2,7 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InputReciever : MonoBehaviour
+public abstract class InputReciever : MonoBehaviour
 {
-    //TBD
+    protected IInputHandler[] inputHandlers;
+
+    public abstract void OnInputRecieved();
+
+    private void Awake(){
+        inputHandlers = GetComponents<IInputHandler>();
+    }
 }

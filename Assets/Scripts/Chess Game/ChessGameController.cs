@@ -5,19 +5,31 @@ using UnityEngine;
 
 [RequireComponent(typeof(PieceCreator))]
 
-public class ChessGameControll : MonoBehaviour
+public class ChessGameController : MonoBehaviour
 {
     [SerializeField] private BoardLayout startingBoardLayout;
     [SerializeField] private Board board;
     private PieceCreator pieceCreator;
 
+    private ChessPlayer whitePlayer;
+    private ChessPlayer blackPlayer;
+    private ChessPlayer activePlayer;
+    
+
     private void Awake(){
         setDependencies();
+        CreatePlayers();
     }
 
     private void setDependencies(){
         pieceCreator = GetComponent<PieceCreator>();
     }
+
+    private void CreatePlayers(){
+        whitePlayer = new ChessPlayer(TeamColor.White, board);
+        blackPlayer = new ChessPlayer(TeamColor.Black, board);
+    }
+
 
     void Start()
     {
@@ -26,7 +38,10 @@ public class ChessGameControll : MonoBehaviour
 
     private void StartNewGame()
     {
+        board.setDependencies(this);
         CreatePiecesFromLayout(startingBoardLayout);
+        activePlayer = whitePlayer;
+        GenerateAllPossiblePlayerMoves(activePlayer);
     }
 
     private void CreatePiecesFromLayout(BoardLayout layout){
@@ -39,7 +54,24 @@ public class ChessGameControll : MonoBehaviour
             Type type = Type.GetType(typeName);
             CreatePieceAndInitialize(squareCoords, team, type);
         }
+    }
 
+    public void EndTurn(){
+        GenerateAllPossiblePlayerMoves(activePlayer);
+        GenerateAllPossiblePlayerMoves(GetOpponentToPlayer(activePlayer));
+        ChangeActiveTeam();
+    }
+
+    private ChessPlayer GetOpponentToPlayer(ChessPlayer player){
+        return player = whitePlayer ? blackPlayer : whitePlayer;
+    }
+
+    private void ChangeActiveTeam(){
+        activePlayer = activePlayer == whitePlayer ? blackPlayer : whitePlayer;
+    }
+
+    public bool IsTeamTurnActive(TeamColor team){
+        return activePlayer.team == team;
     }
 
     private void CreatePieceAndInitialize(Vector2Int squareCoords, TeamColor team, Type type){
@@ -50,4 +82,7 @@ public class ChessGameControll : MonoBehaviour
         newPiece.SetMaterial(teamMaterial);
     }
 
+    private void GenerateAllPossiblePlayerMoves(ChessPlayer player){
+        player.GenerateAllPossibleMoves();
+    }
 }
