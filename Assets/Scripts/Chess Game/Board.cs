@@ -29,8 +29,8 @@ public class Board : MonoBehaviour
     }
 
     private Vector2Int CalculateCoordsFromPosition(Vector3 inputPosition){
-        int x = Mathf.FloorToInt(transform.InverseTransformPoint(inputPosition).x / squareSize) + 8 / 2;    // 8/2 may not be neccesary
-        int y = Mathf.FloorToInt(transform.InverseTransformPoint(inputPosition).y / squareSize) + 8 / 2;
+        int x = Mathf.FloorToInt(inputPosition.x / squareSize) + 4;
+        int y = Mathf.FloorToInt(inputPosition.z / squareSize) + 4;
         return new Vector2Int(x, y);
     }
 
@@ -61,7 +61,11 @@ public class Board : MonoBehaviour
     }
 
     private void SelectPiece(Piece piece){
+        Debug.Log("piece selected");
         selectedPiece = piece;
+        foreach(var item in selectedPiece.availableMoves){
+            Debug.Log("x-" + item.x.ToString() + ", y-" + item.y.ToString());
+        }
     }
     
     private void OnSelectedPieceMoved(Vector2Int coords, Piece piece){
@@ -76,18 +80,17 @@ public class Board : MonoBehaviour
         grid[newCoords.x, newCoords.y] = newPiece;
     }
 
-    private Piece GetPieceOnSquare(Vector2Int coords){
+    public Piece GetPieceOnSquare(Vector2Int coords){
         if(CheckIfCoordinateAreOnBoard(coords))
             return grid[coords.x, coords.y];
         return null;
     }
 
-    private bool CheckIfCoordinateAreOnBoard(Vector2Int coords){
-        if(coords.x < 0 || coords.y < 0 || coords.x >= 8 || coords.x >= 8)      // coords.x > -8 ???
+    public bool CheckIfCoordinateAreOnBoard(Vector2Int coords){
+        if(coords.x < 0 || coords.y < 0 || coords.x >= 8 || coords.y >= 8)
             return false;
         return true;
     }
-
 
     public bool HasPiece(Piece piece){
         for(int i = 0; i < 8; i++) {
@@ -100,4 +103,11 @@ public class Board : MonoBehaviour
         return false;
     }
 
+    public void SetPieceOnBoard(Vector2Int coords, Piece piece){
+        if (CheckIfCoordinateAreOnBoard(coords)){
+            grid[coords.x, coords.y] = piece;
+        }    
+
+    }
+    
 }

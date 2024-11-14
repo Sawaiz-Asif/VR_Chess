@@ -27,7 +27,7 @@ public class BoardLayout : ScriptableObject
             return new Vector2Int(-1,-1);
         }
 
-        return new Vector2Int(boardSquares[index].position.x - 1, boardSquares[index].position.y -1);
+        return new Vector2Int(boardSquares[index].position.x - 1, boardSquares[index].position.y - 1);
     }
 
     public string GetSquarePieceNameAtIndex(int index) {

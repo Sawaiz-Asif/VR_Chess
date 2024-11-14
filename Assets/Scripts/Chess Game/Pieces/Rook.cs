@@ -4,7 +4,28 @@ using UnityEngine;
 
 public class Rook : Piece
 {
+    private Vector2Int[] directions = new Vector2Int[] {Vector2Int.left, Vector2Int.right, Vector2Int.up, Vector2Int.down};
     public override List<Vector2Int> SelectAvailableSquares(){
-        throw new System.NotImplementedException();
+        availableMoves.Clear();
+        float range = 8; // maximum moving distance
+
+        foreach(var direction in directions){
+            for (int i = 1; i <= range; i++){
+                Vector2Int nextCoords = occupiedSquare + direction * i;
+                Piece piece = board.GetPieceOnSquare(nextCoords);
+                if (!board.CheckIfCoordinateAreOnBoard(nextCoords)){
+                    break;
+                }
+                if (piece == null){
+                    TryToAddMove(nextCoords);
+                } else if (!piece.IsFromSameTeam(this)) {
+                    TryToAddMove(nextCoords);
+                    break;
+                } else if (piece.IsFromSameTeam(this)) {
+                    break;
+                }
+            }
+        }
+        return availableMoves;
     }
 }
