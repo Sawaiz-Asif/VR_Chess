@@ -2,8 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Leap;
+
 public class Board : MonoBehaviour
 {
+    [SerializeField] private LeapProvider leapProvider;
     [SerializeField] private Transform bottomLeftSquareTransform;
     [SerializeField] private float squareSize;
 
@@ -12,7 +15,22 @@ public class Board : MonoBehaviour
     private ChessGameController chessController;
 
     private void Awake(){
+         // Ensure LeapProvider is assigned
+        if (leapProvider == null)
+        {
+            leapProvider = FindObjectOfType<LeapProvider>();
+        }
+
+        AssignLeapProviderToPieces();
         CreateGrid();
+    }
+     private void AssignLeapProviderToPieces()
+    {
+        Piece[] pieces = FindObjectsOfType<Piece>();
+        foreach (Piece piece in pieces)
+        {
+            piece.AssignLeapProvider(leapProvider);
+        }
     }
 
     public void setDependencies(ChessGameController chessController){

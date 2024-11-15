@@ -21,6 +21,11 @@ public class PieceCreator : MonoBehaviour
         GameObject prefab = nameToPieceDict[type.ToString()];
         if (prefab){
             GameObject newPiece = Instantiate(prefab);
+            // Check if the piece has a collider, if not, add one
+            if (newPiece.GetComponent<Collider>() == null)
+            {
+                newPiece.AddComponent<BoxCollider>();
+            }
             return newPiece;
         }
         return null;
