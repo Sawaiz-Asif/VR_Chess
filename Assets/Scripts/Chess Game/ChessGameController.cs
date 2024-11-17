@@ -2,11 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(PieceCreator))]
 
 public class ChessGameController : MonoBehaviour
 {
+    private enum GameState {Init, Play, Finished}
     [SerializeField] private BoardLayout startingBoardLayout;
     [SerializeField] private Board board;
     private PieceCreator pieceCreator;
@@ -14,7 +17,7 @@ public class ChessGameController : MonoBehaviour
     private ChessPlayer whitePlayer;
     private ChessPlayer blackPlayer;
     private ChessPlayer activePlayer;
-    
+    private GameState state;
 
     private void Awake(){
         setDependencies();
@@ -37,13 +40,22 @@ public class ChessGameController : MonoBehaviour
 
     private void StartNewGame()
     {
+        SetGameState(GameState.Init);
         board.setDependencies(this);
         CreatePiecesFromLayout(startingBoardLayout);
         activePlayer = whitePlayer;
         GenerateAllPossiblePlayerMoves(activePlayer);
-
+        SetGameState(GameState.Play);
     }
 
+    private void SetGameState(GameState state){
+        this.state = state;
+    }
+
+    public bool IsGameInProgress(){
+        return state == GameState.Play;
+    }
+    
     private void CreatePiecesFromLayout(BoardLayout layout){
         
         for (int i = 0; i < layout.GetPiecesCount(); i++){
@@ -57,10 +69,38 @@ public class ChessGameController : MonoBehaviour
     }
 
     public void EndTurn(){
-        //GenerateAllPossiblePlayerMoves(GetOpponentToPlayer(activePlayer));
-        ChangeActiveTeam();
-        GenerateAllPossiblePlayerMoves(activePlayer);
-        
+        GenerateAllPossiblePlayerMoves(whitePlayer);
+        GenerateAllPossiblePlayerMoves(blackPlayer);
+        if (CheckIfGameIsFinished()){
+            EndGame();
+        } else {
+            ChangeActiveTeam();
+        }
+        GenerateAllPossiblePlayerMoves(whitePlayer);
+        GenerateAllPossiblePlayerMoves(blackPlayer);
+    }
+
+    private bool CheckIfGameIsFinished(){
+        Piece[] kingAttackingPieces = activePlayer.GetPiecesAttackingOppositePieceOfType<King>();
+        if (kingAttackingPieces.Length > 0){
+            ChessPlayer oppositePlayer = GetOpponentToPlayer(activePlayer);
+            Piece attackedKing = oppositePlayer.GetPiecesPieceOfType<King>().FirstOrDefault();
+            oppositePlayer.RemoveMovesEnablingAttackOnPiece<King>(activePlayer, attackedKing);
+
+            int availableKingMoves = attackedKing.availableMoves.Count;
+            if (availableKingMoves == 0) {
+                bool canCoverKing = oppositePlayer.CanHidePieceFromAttacking<King>(activePlayer);
+                if (!canCoverKing){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void EndGame(){
+        Debug.Log("Game Ended");
+        SetGameState(GameState.Finished);
     }
 
     private ChessPlayer GetOpponentToPlayer(ChessPlayer player){
@@ -90,5 +130,15 @@ public class ChessGameController : MonoBehaviour
 
     private void GenerateAllPossiblePlayerMoves(ChessPlayer player){
         player.GenerateAllPossibleMoves();
+    }
+
+    public void RemoveMovesEnablingAttackOnPieceOfType<T>(Piece piece) where T : Piece {
+        activePlayer.RemoveMovesEnablingAttackOnPiece<T>(GetOpponentToPlayer(activePlayer), piece);
+    }
+
+    public void OnPieceRemoved(Piece piece){
+        ChessPlayer pieceOwner = (piece.team == TeamColor.White) ? whitePlayer : blackPlayer;
+        pieceOwner.RemovePiece(piece);
+        Destroy(piece.gameObject);
     }
 }

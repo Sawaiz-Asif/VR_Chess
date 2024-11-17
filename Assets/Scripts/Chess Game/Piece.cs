@@ -57,4 +57,13 @@ public abstract class Piece : MonoBehaviour
         this.board = board;
         transform.position = board.CalculatePositionFromCoords(coords);
     }
+
+    public bool IsAttackingPieceOfType<T>() where T : Piece {
+        foreach (var square in availableMoves){
+            if (board.GetPieceOnSquare(square) is T){
+                return true;
+            }
+        }
+        return false;
+    }
 }
