@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(SquareSelectorCreator))]
+
 public class Board : MonoBehaviour
 {
     [SerializeField] private Transform bottomLeftSquareTransform;
@@ -10,8 +12,10 @@ public class Board : MonoBehaviour
     private Piece[,] grid;
     private Piece selectedPiece;
     private ChessGameController chessController;
+    private SquareSelectorCreator squareSelector;
 
     private void Awake(){
+        squareSelector = GetComponent<SquareSelectorCreator>();
         CreateGrid();
     }
 
@@ -58,16 +62,29 @@ public class Board : MonoBehaviour
 
     private void DeselectPiece(){
         selectedPiece = null;
+        squareSelector.ClearSelection();
     }
 
     private void SelectPiece(Piece piece){
-        Debug.Log("piece selected");
+        //Debug.Log("piece selected");
         selectedPiece = piece;
-        foreach(var item in selectedPiece.availableMoves){
-            Debug.Log("x-" + item.x.ToString() + ", y-" + item.y.ToString());
-        }
+        //foreach(var item in selectedPiece.availableMoves){
+        //    Debug.Log("x-" + item.x.ToString() + ", y-" + item.y.ToString());
+        //}
+        List<Vector2Int> selection = selectedPiece.availableMoves;
+        ShowSelectionSquares(selection);
     }
     
+    private void ShowSelectionSquares(List<Vector2Int> selection){
+        Dictionary<Vector3, bool> squaresData = new Dictionary<Vector3, bool>();
+        for (int i = 0; i < selection.Count; i++){
+            Vector3 position = CalculatePositionFromCoords(selection[i]);
+            bool isSquareFree = GetPieceOnSquare(selection[i]) == null;
+            squaresData.Add(position, isSquareFree);
+        }
+        squareSelector.ShowSelection(squaresData);
+    }   
+
     private void OnSelectedPieceMoved(Vector2Int coords, Piece piece){
         UpdateBoardOnPieceMove(coords, piece.occupiedSquare, piece, null);
         selectedPiece.MovePiece(coords);
