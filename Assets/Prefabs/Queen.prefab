@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 33386584874682660}
   - component: {fileID: 23714218359197728}
   - component: {fileID: 3490168026209581096}
-  - component: {fileID: 2974445174240874668}
+  - component: {fileID: 773171459463840328}
   - component: {fileID: -6771363368611276841}
   m_Layer: 0
   m_Name: Queen
@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableMoves: []
---- !u!114 &2974445174240874668
+--- !u!114 &773171459463840328
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -108,9 +108,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1945632463053948}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2827668657b905043b31e86c538783c4, type: 3}
+  m_Script: {fileID: 11500000, guid: adcbd478abd8d2c4a9aa4e10519be569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 3
 --- !u!114 &-6771363368611276841
 MonoBehaviour:
   m_ObjectHideFlags: 0
