@@ -113,7 +113,7 @@ public class ChessGameController : MonoBehaviour
         return activePlayer.team == team;
     }
 
-    private void CreatePieceAndInitialize(Vector2Int squareCoords, TeamColor team, Type type){
+    public void CreatePieceAndInitialize(Vector2Int squareCoords, TeamColor team, Type type){
         Piece newPiece = pieceCreator.CreatePiece(type).GetComponent<Piece>();
         newPiece.SetData(squareCoords, team, board);
 
