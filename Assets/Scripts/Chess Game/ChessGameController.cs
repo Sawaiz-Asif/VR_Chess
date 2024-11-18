@@ -69,15 +69,13 @@ public class ChessGameController : MonoBehaviour
     }
 
     public void EndTurn(){
-        GenerateAllPossiblePlayerMoves(whitePlayer);
-        GenerateAllPossiblePlayerMoves(blackPlayer);
+        GenerateAllPossiblePlayerMoves(activePlayer);
+        GenerateAllPossiblePlayerMoves(GetOpponentToPlayer(activePlayer));
         if (CheckIfGameIsFinished()){
             EndGame();
         } else {
             ChangeActiveTeam();
         }
-        GenerateAllPossiblePlayerMoves(whitePlayer);
-        GenerateAllPossiblePlayerMoves(blackPlayer);
     }
 
     private bool CheckIfGameIsFinished(){
@@ -104,11 +102,11 @@ public class ChessGameController : MonoBehaviour
     }
 
     private ChessPlayer GetOpponentToPlayer(ChessPlayer player){
-        return player == whitePlayer ? blackPlayer : whitePlayer;
+        return player.team == whitePlayer.team ? blackPlayer : whitePlayer;
     }
 
     private void ChangeActiveTeam(){
-        activePlayer = activePlayer.team == whitePlayer.team ? blackPlayer :  whitePlayer;
+        activePlayer = activePlayer.team == whitePlayer.team ? blackPlayer : whitePlayer;
     }
 
     public bool IsTeamTurnActive(TeamColor team){

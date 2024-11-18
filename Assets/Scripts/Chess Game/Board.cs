@@ -29,13 +29,12 @@ public class Board : MonoBehaviour
 
     public Vector3 CalculatePositionFromCoords(Vector2Int coords){
         return bottomLeftSquareTransform.position + new Vector3(coords.x * squareSize, 0f, coords.y * squareSize);
-        
     }
 
     private Vector2Int CalculateCoordsFromPosition(Vector3 inputPosition){
         int x = Mathf.FloorToInt(inputPosition.x / squareSize) + 4;
         int y = Mathf.FloorToInt(inputPosition.z / squareSize) + 4;
-        return new Vector2Int(x, y);
+        return new Vector2Int(x, y);        
     }
 
     public void OnSquareSelected(Vector3 inputPosition){
@@ -44,25 +43,20 @@ public class Board : MonoBehaviour
         }
         Vector2Int coords = CalculateCoordsFromPosition(inputPosition);
         Piece piece = GetPieceOnSquare(coords);
-        Debug.Log("GetPieceOnSquare done");
         if(selectedPiece){
             if(piece != null && selectedPiece == piece){
                 DeselectPiece();
-                Debug.Log("DeselectPiece done");
             }
             else if(piece != null && selectedPiece != piece && chessController.IsTeamTurnActive(piece.team)){
                 SelectPiece(piece);
-                Debug.Log("SelectPiece done");
             }
             else if(selectedPiece.CanMoveTo(coords)){
                 OnSelectedPieceMoved(coords, selectedPiece);
-                Debug.Log("OnSelectedPieceMoved done");
             }
         }
         else{
             if(piece != null && chessController.IsTeamTurnActive(piece.team)){
                 SelectPiece(piece);
-                Debug.Log("SelectPiece done");
             }
         }
     }
@@ -77,12 +71,8 @@ public class Board : MonoBehaviour
     }
 
     private void SelectPiece(Piece piece){
-        //Debug.Log("piece selected");
         chessController.RemoveMovesEnablingAttackOnPieceOfType<King>(piece);
         selectedPiece = piece;
-        //foreach(var item in selectedPiece.availableMoves){
-        //    Debug.Log("x-" + item.x.ToString() + ", y-" + item.y.ToString());
-        //}
         List<Vector2Int> selection = selectedPiece.availableMoves;
         ShowSelectionSquares(selection);
     }
