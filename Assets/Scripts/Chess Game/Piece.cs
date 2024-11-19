@@ -19,11 +19,45 @@ public abstract class Piece : MonoBehaviour
 
     public abstract List<Vector2Int> SelectAvailableSquares();
 
+
+    // Leap motion Code 
+
+    // Existing variables and methods remain as-is...
+
+    private bool isBeingMoved = false; // Track if the piece is being moved by Leap Motion
+
+    public void MoveWithLeapMotion(Vector3 targetPosition)
+    {
+        if (isBeingMoved)
+        {
+            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 10f);
+        }
+    }
+
+    public void StartMoveWithLeapMotion()
+    {
+        isBeingMoved = true;
+    }
+
+    public void StopMoveWithLeapMotion()
+    {
+        isBeingMoved = false;
+    }
+
+
+    // ...............
+
     private void Awake(){
         availableMoves = new List<Vector2Int>();
         tweener = GetComponent<IObjectTweener>();
         materialSetter = GetComponent<MaterialSetter>();
         hasMoved = false;
+        // Ensure the piece has a collider
+        if (GetComponent<Collider>() == null)
+        {
+            gameObject.AddComponent<BoxCollider>(); // Add a BoxCollider if none exists
+            Debug.Log($"Collider added to {name}");
+        }
     }
 
     public void SetMaterial(Material material){
