@@ -31,7 +31,7 @@ public class Board : MonoBehaviour
         return bottomLeftSquareTransform.position + new Vector3(coords.x * squareSize, 0f, coords.y * squareSize);
     }
 
-    private Vector2Int CalculateCoordsFromPosition(Vector3 inputPosition){
+    public Vector2Int CalculateCoordsFromPosition(Vector3 inputPosition){
         int x = Mathf.FloorToInt(inputPosition.x / squareSize) + 4;
         int y = Mathf.FloorToInt(inputPosition.z / squareSize) + 4;
         return new Vector2Int(x, y);        

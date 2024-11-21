@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using Leap;
 
 public class LeapMotionInputReceiver : InputReciever
@@ -9,115 +7,167 @@ public class LeapMotionInputReceiver : InputReciever
     [SerializeField] private LeapProvider leapProvider; // Reference to LeapProvider
     private bool isPinching;
     private Vector3 pinchPosition;
-    private Piece selectedPiece = null; // The currently pinched piece
-
+    private Piece selectedPiece = null; // Currently pinched piece
+    private LineRenderer lineRenderer; // For showing the landing ray
 
     private void Awake()
     {
-        // Ensure inputHandlers is populated
+        // Initialize inputHandlers from attached components
         inputHandlers = GetComponents<IInputHandler>();
-        
+
         if (inputHandlers == null || inputHandlers.Length == 0)
         {
-            Debug.LogError("No IInputHandler components found! Ensure the BoardInputHandler and other handlers are attached.");
+            Debug.LogWarning("No IInputHandler components found. Attach appropriate handlers like BoardInputHandler.");
         }
-        else
-        {
-            Debug.Log($"Input handlers found: {inputHandlers.Length}");
-        }
-    }
 
+        SetupLineRenderer();
+    }
 
     private void Update()
     {
-        if (leapProvider != null)
+        if (leapProvider == null)
         {
-            Frame frame = leapProvider.CurrentFrame;
-            if (frame.Hands.Count > 0)
-            {
-                Hand hand = frame.Hands[0]; // Use the first detected hand
-                isPinching = hand.IsPinching();
-                pinchPosition = hand.GetPinchPosition();
+            Debug.LogError("LeapProvider is not assigned. Please attach a LeapProvider component.");
+            return;
+        }
 
-                if (true)
-                {
-                    OnInputRecieved();
-                }
-            }
+        Frame frame = leapProvider.CurrentFrame;
+        if (frame.Hands.Count > 0)
+        {
+            Hand firstHand = frame.Hands[0];
+            pinchPosition = firstHand.GetPinchPosition();
+            isPinching = firstHand.IsPinching();
+
+            OnInputRecieved();
+        }
+        else
+        {
+            HandleNoHands();
         }
     }
 
-public override void OnInputRecieved()
-{
-    if (leapProvider == null)
+    public override void OnInputRecieved()
     {
-        Debug.LogError("LeapProvider is null in OnInputRecieved!");
-        return;
-    }
-
-    Frame frame = leapProvider.CurrentFrame;
-
-    if (inputHandlers == null || inputHandlers.Length == 0)
-    {
-        Debug.LogError("No input handlers found!");
-        return;
-    }
-
-    foreach (var handler in inputHandlers)
-    {
-        if (handler is BoardInputHandler boardInputHandler)
+        if (isPinching)
         {
-           // Debug.Log("Processing input with BoardInputHandler...");
-
-            if (frame.Hands.Count > 0)
+            if (selectedPiece == null)
             {
-                Hand firstHand = frame.Hands[0];
-                bool isCurrentlyPinching = firstHand.IsPinching();
-
-                if (firstHand.IsPinching())
+                // Try to select a piece
+                if (TryRaycastToPiece(pinchPosition, out Piece piece))
                 {
-                    Vector3 pinchPosition = firstHand.GetPinchPosition();
-                    Ray ray = new Ray(Camera.main.transform.position, pinchPosition - Camera.main.transform.position);
-
-                    if (Physics.Raycast(ray, out RaycastHit hitInfo))
-                    {
-                        Piece piece = hitInfo.collider.GetComponent<Piece>();
-
-                        if (piece != null)
-                        {
-                            if (selectedPiece == null)
-                            {
-                                // Start pinching: Select the new piece
-                                selectedPiece = piece;
-                                selectedPiece.StartMoveWithLeapMotion();
-                                Debug.Log($"Started moving piece: {selectedPiece.name}");
-                            }
-                            else if (selectedPiece == piece)
-                            {
-                                // Continue moving the already selected piece
-                                selectedPiece.MoveWithLeapMotion(pinchPosition);
-                            }
-                            else
-                            {
-                                Debug.LogWarning($"Another piece detected ({piece.name}), but ignoring it since {selectedPiece.name} is already selected.");
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log($"Dropped piece: {selectedPiece.name} at position {selectedPiece.transform.position}");
-                    // Stop pinching: Drop the currently selected piece
-                    if (selectedPiece != null)
-                    {
-                        selectedPiece.StopMoveWithLeapMotion();
-                        Debug.Log($"Dropped piece: {selectedPiece.name} at position {selectedPiece.transform.position}");
-                        selectedPiece = null; // Reset selectedPiece
-                    }
+                    SelectPiece(piece);
                 }
             }
+            else
+            {
+                // Move the selected piece directly with Leap Motion
+                MovePieceToPinchPosition(selectedPiece, pinchPosition);
+                DrawLandingRay(selectedPiece);
+            }
+        }
+        else if (selectedPiece != null)
+        {
+            HandleRelease();
         }
     }
-}
 
+    private bool TryRaycastToPiece(Vector3 position, out Piece piece)
+    {
+        piece = null;
+        Ray ray = new Ray(Camera.main.transform.position, position - Camera.main.transform.position);
+        Debug.DrawRay(ray.origin, ray.direction * 10, Color.red); // Visualize ray
+
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        {
+            piece = hitInfo.collider.GetComponent<Piece>();
+            if (piece != null)
+            {
+                Debug.Log($"Ray hit piece: {piece.name}");
+                return true;
+            }
+        }
+
+        Debug.Log("Ray did not hit any piece.");
+        return false;
+    }
+
+    private void SelectPiece(Piece piece)
+    {
+        selectedPiece = piece;
+        Debug.Log($"Selected piece: {selectedPiece.name}");
+        selectedPiece.HighlightPiece(Color.blue);
+    }
+
+    private void MovePieceToPinchPosition(Piece piece, Vector3 targetPosition)
+    {
+        piece.transform.position = Vector3.Lerp(piece.transform.position, targetPosition, Time.deltaTime * 10f);
+        Debug.Log($"Moving piece {piece.name} to position {targetPosition}");
+    }
+
+    private void HandleRelease()
+    {
+        Debug.Log($"Released piece: {selectedPiece.name}");
+        Ray ray = new Ray(selectedPiece.transform.position, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        {
+            // Use the ray hit position to finalize the piece's movement
+            selectedPiece.MovePieceToPosition(hitInfo.point);
+            Debug.Log($"Piece moved to: {hitInfo.point}");
+        }
+        selectedPiece.RemoveHighlight();
+        selectedPiece = null; // Clear the selection
+        lineRenderer.enabled = false;
+    }
+
+    private void HandleNoHands()
+    {
+        lineRenderer.enabled = false; // Hide the line if no hands are detected
+    }
+
+    private void DrawLandingRay(Piece piece)
+    {
+        Ray ray = new Ray(piece.transform.position, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        {
+            lineRenderer.enabled = true;
+            lineRenderer.SetPosition(0, piece.transform.position);
+            lineRenderer.SetPosition(1, hitInfo.point);
+
+            // Determine if the landing position is valid
+            if (IsMoveValid(hitInfo.point))
+            {
+                lineRenderer.startColor = Color.green;
+                lineRenderer.endColor = Color.green;
+            }
+            else
+            {
+                lineRenderer.startColor = Color.red;
+                lineRenderer.endColor = Color.red;
+            }
+        }
+        else
+        {
+            lineRenderer.enabled = false; // Hide the line if no valid target is found
+        }
+    }
+
+    private bool IsMoveValid(Vector3 targetPosition)
+    {
+        // Add logic to check if the move is valid (e.g., based on board rules)
+        // For now, we assume all moves are valid
+        return true;
+    }
+
+    private void SetupLineRenderer()
+    {
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.positionCount = 2;
+        lineRenderer.startWidth = 0.05f;
+        lineRenderer.endWidth = 0.05f;
+        lineRenderer.useWorldSpace = true;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = Color.green;
+        lineRenderer.endColor = Color.green;
+        lineRenderer.enabled = false;
+    }
 }

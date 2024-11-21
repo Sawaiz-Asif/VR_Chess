@@ -6,10 +6,12 @@ using UnityEngine;
 [RequireComponent(typeof(IObjectTweener))]
 [RequireComponent(typeof(MaterialSetter))]
 
+
+
 public abstract class Piece : MonoBehaviour
 {
     private MaterialSetter materialSetter;
-    public Board board {protected get; set;}
+    public Board board { get; set;}
     public Vector2Int occupiedSquare { get; set;}
     public TeamColor team { get; set;}
     public bool hasMoved { get; private set; }
@@ -21,6 +23,12 @@ public abstract class Piece : MonoBehaviour
 
 
     // Leap motion Code 
+
+    [SerializeField] public Material outlineMaterial;
+    private Color originalColor; // Store the original color
+    private Renderer pieceRenderer;
+
+    private LineRenderer lineRenderer;
 
     // Existing variables and methods remain as-is...
 
@@ -44,7 +52,41 @@ public abstract class Piece : MonoBehaviour
         isBeingMoved = false;
     }
 
+    // Method to assign the outline material
+    // Method to highlight the piece
+    public void HighlightPiece(Color highlightColor)
+    {
+        pieceRenderer.material.color = highlightColor; // Change to highlight color
+    }
 
+    // Method to revert the highlight
+    public void RemoveHighlight()
+    {
+        pieceRenderer.material.color = originalColor; // Revert to original color
+    }
+    // Show the guiding ray
+    public void ShowGuidingRay(Vector3 targetPosition)
+    {
+        lineRenderer.enabled = true;
+        lineRenderer.SetPosition(0, transform.position); // Start at the piece
+        lineRenderer.SetPosition(1, targetPosition);    // End at the target
+    }
+
+    // Hide the guiding ray
+    public void HideGuidingRay()
+    {
+        lineRenderer.enabled = false;
+    }
+    public void MovePieceToPosition(Vector3 inputPosition)
+    {
+        if (board == null)
+        {
+            Debug.LogError("Board reference is missing!");
+            return;
+        }
+        Vector2Int targetCoords = board.CalculateCoordsFromPosition(inputPosition);
+        MovePiece(targetCoords);
+    }
     // ...............
 
     private void Awake(){
@@ -52,18 +94,35 @@ public abstract class Piece : MonoBehaviour
         tweener = GetComponent<IObjectTweener>();
         materialSetter = GetComponent<MaterialSetter>();
         hasMoved = false;
+        // leap motion code :Sawaiz
+        pieceRenderer = GetComponent<Renderer>();
+        originalColor = pieceRenderer.material.color; // Save the original color
+        // Print the original color
+        Debug.Log($"Original color of {name}: {originalColor}");
         // Ensure the piece has a collider
         if (GetComponent<Collider>() == null)
         {
             gameObject.AddComponent<BoxCollider>(); // Add a BoxCollider if none exists
             Debug.Log($"Collider added to {name}");
         }
+        // Initialize the LineRenderer
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.startWidth = 0.05f;
+        lineRenderer.endWidth = 0.05f;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default")); // Basic material
+        lineRenderer.startColor = Color.yellow;
+        lineRenderer.endColor = Color.yellow;
+        lineRenderer.enabled = false; // Hide by default
+        // ...
     }
 
     public void SetMaterial(Material material){
         if (materialSetter == null)
             materialSetter = GetComponent<MaterialSetter>();
         materialSetter.SetSingleMaterial(material);
+        // Capture the assigned color
+        originalColor = material.color;
+        Debug.Log($"Assigned color to {name}: {originalColor}");
     }
 
     public bool IsFromSameTeam(Piece piece){
