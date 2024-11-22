@@ -11,8 +11,45 @@ public class Board : MonoBehaviour
 
     private Piece[,] grid;
     private Piece selectedPiece;
+    private Piece dragPiece;
     private ChessGameController chessController;
     private SquareSelectorCreator squareSelector;
+
+    // Drag and drop logic for the leap motion is added here :sawaiz
+    private bool isBeingDragged = false;
+    public void StartDragging()
+    {
+        if(selectedPiece != null)
+        {
+            selectedPiece.lineRenderer.enabled = true;
+            isBeingDragged = true;
+        }
+    }
+
+    public void Drag(Vector3 pointerPosition)
+    {
+        if (isBeingDragged && selectedPiece !=null )
+        {
+            selectedPiece.transform.position = pointerPosition;
+            selectedPiece.ShowGuidedRay();
+        }
+    }
+    private void movePieceBack()
+    {
+        
+        Ray ray = new Ray(selectedPiece.transform.position, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        {
+            if (!selectedPiece.CanMoveTo(CalculateCoordsFromPosition(hitInfo.point))){
+                selectedPiece.transform.position = CalculatePositionFromCoords(selectedPiece.occupiedSquare); // Reset to original position
+            }
+        }
+        else
+        {
+            selectedPiece.transform.position = CalculatePositionFromCoords(selectedPiece.occupiedSquare); // Reset to original position
+        }
+    }
+    // ...
 
     private void Awake(){
         squareSelector = GetComponent<SquareSelectorCreator>();
@@ -41,17 +78,29 @@ public class Board : MonoBehaviour
         if (!chessController.IsGameInProgress()){
             return;
         }
+
         Vector2Int coords = CalculateCoordsFromPosition(inputPosition);
+        
         Piece piece = GetPieceOnSquare(coords);
         if(selectedPiece){
-            if(piece != null && selectedPiece == piece){
+            if(piece != null && selectedPiece == piece){  // if piece is selected and trying to drop on the same location where piece was before :sawaiz
                 DeselectPiece();
             }
-            else if(piece != null && selectedPiece != piece && chessController.IsTeamTurnActive(piece.team)){
-                SelectPiece(piece);
+            else if(piece != null && selectedPiece != piece && chessController.IsTeamTurnActive(piece.team)){ 
+                if(isBeingDragged) // IN CASE OF DRAG AND DROP WE CAN NOT SELECT TWO PIECE AT ONCE // ONLY FOR LEAP MOTION :sawaiz  
+                {
+                    DeselectPiece();
+                }
+                else{ // IN CASE OF MOUSE WE SELECT OTHER PIECE 
+                    SelectPiece(piece);
+                }
             }
-            else if(selectedPiece.CanMoveTo(coords)){
+            else if(selectedPiece.CanMoveTo(coords)){ // in case of we have selected the empty square or other player piece :sawaiz
                 OnSelectedPieceMoved(coords, selectedPiece);
+            }
+            else if(isBeingDragged) // ONLY FOR LEAP MOTION :sawaiz  
+            {
+                DeselectPiece();
             }
         }
         else{
@@ -66,6 +115,12 @@ public class Board : MonoBehaviour
     }
 
     private void DeselectPiece(){
+        selectedPiece.RemoveHighlight();
+        if(isBeingDragged){ // ONLY FOR LEAP MOTION :sawaiz  
+            selectedPiece.lineRenderer.enabled = false; // Disable the ray
+            movePieceBack(); // leap
+            isBeingDragged = false; //leap
+        }
         selectedPiece = null;
         squareSelector.ClearSelection();
     }
@@ -73,8 +128,12 @@ public class Board : MonoBehaviour
     private void SelectPiece(Piece piece){
         chessController.RemoveMovesEnablingAttackOnPieceOfType<King>(piece);
         selectedPiece = piece;
+        selectedPiece.HighlightPiece(Color.blue);
         List<Vector2Int> selection = selectedPiece.availableMoves;
         ShowSelectionSquares(selection);
+        if(isBeingDragged){ // ONLY FOR LEAP MOTION :sawaiz    
+            selectedPiece.lineRenderer.enabled = true;
+        }
     }
     
     private void ShowSelectionSquares(List<Vector2Int> selection){

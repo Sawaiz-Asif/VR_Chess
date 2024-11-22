@@ -21,74 +21,60 @@ public abstract class Piece : MonoBehaviour
 
     public abstract List<Vector2Int> SelectAvailableSquares();
 
-
-    // Leap motion Code 
-
-    [SerializeField] public Material outlineMaterial;
+    // new implementation 
     private Color originalColor; // Store the original color
+    public LineRenderer lineRenderer;
     private Renderer pieceRenderer;
-
-    private LineRenderer lineRenderer;
-
-    // Existing variables and methods remain as-is...
-
-    private bool isBeingMoved = false; // Track if the piece is being moved by Leap Motion
-
-    public void MoveWithLeapMotion(Vector3 targetPosition)
-    {
-        if (isBeingMoved)
-        {
-            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 10f);
-        }
-    }
-
-    public void StartMoveWithLeapMotion()
-    {
-        isBeingMoved = true;
-    }
-
-    public void StopMoveWithLeapMotion()
-    {
-        isBeingMoved = false;
-    }
-
-    // Method to assign the outline material
     // Method to highlight the piece
     public void HighlightPiece(Color highlightColor)
     {
         pieceRenderer.material.color = highlightColor; // Change to highlight color
     }
-
-    // Method to revert the highlight
     public void RemoveHighlight()
     {
         pieceRenderer.material.color = originalColor; // Revert to original color
     }
-    // Show the guiding ray
-    public void ShowGuidingRay(Vector3 targetPosition)
+    private void SetupLineRenderer()
     {
-        lineRenderer.enabled = true;
-        lineRenderer.SetPosition(0, transform.position); // Start at the piece
-        lineRenderer.SetPosition(1, targetPosition);    // End at the target
-    }
-
-    // Hide the guiding ray
-    public void HideGuidingRay()
-    {
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.positionCount = 2;
+        lineRenderer.startWidth = 0.05f;
+        lineRenderer.endWidth = 0.05f;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = Color.green;
+        lineRenderer.endColor = Color.green;
         lineRenderer.enabled = false;
     }
-    public void MovePieceToPosition(Vector3 inputPosition)
+    public void ShowGuidedRay()
     {
-        if (board == null)
+        Ray ray = new Ray(transform.position, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
         {
-            Debug.LogError("Board reference is missing!");
-            return;
-        }
-        Vector2Int targetCoords = board.CalculateCoordsFromPosition(inputPosition);
-        MovePiece(targetCoords);
-    }
-    // ...............
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, hitInfo.point);
 
+            // Change color based on validity
+            if (CanMoveTo(board.CalculateCoordsFromPosition(hitInfo.point)))
+            {
+                lineRenderer.startColor = Color.green;
+                lineRenderer.endColor = Color.green;
+            }
+            else
+            {
+                lineRenderer.startColor = Color.red;
+                lineRenderer.endColor = Color.red;
+            }
+        }
+        else
+        {
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, transform.position + Vector3.down * 10f);
+            lineRenderer.startColor = Color.red;
+            lineRenderer.endColor = Color.red;
+        }
+    }
+
+    // ...
     private void Awake(){
         availableMoves = new List<Vector2Int>();
         tweener = GetComponent<IObjectTweener>();
@@ -97,22 +83,13 @@ public abstract class Piece : MonoBehaviour
         // leap motion code :Sawaiz
         pieceRenderer = GetComponent<Renderer>();
         originalColor = pieceRenderer.material.color; // Save the original color
-        // Print the original color
-        Debug.Log($"Original color of {name}: {originalColor}");
         // Ensure the piece has a collider
         if (GetComponent<Collider>() == null)
         {
             gameObject.AddComponent<BoxCollider>(); // Add a BoxCollider if none exists
-            Debug.Log($"Collider added to {name}");
         }
         // Initialize the LineRenderer
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.startWidth = 0.05f;
-        lineRenderer.endWidth = 0.05f;
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default")); // Basic material
-        lineRenderer.startColor = Color.yellow;
-        lineRenderer.endColor = Color.yellow;
-        lineRenderer.enabled = false; // Hide by default
+        SetupLineRenderer();
         // ...
     }
 
@@ -122,7 +99,6 @@ public abstract class Piece : MonoBehaviour
         materialSetter.SetSingleMaterial(material);
         // Capture the assigned color
         originalColor = material.color;
-        Debug.Log($"Assigned color to {name}: {originalColor}");
     }
 
     public bool IsFromSameTeam(Piece piece){
