@@ -6,10 +6,12 @@ using UnityEngine;
 [RequireComponent(typeof(IObjectTweener))]
 [RequireComponent(typeof(MaterialSetter))]
 
+
+
 public abstract class Piece : MonoBehaviour
 {
     private MaterialSetter materialSetter;
-    public Board board {protected get; set;}
+    public Board board { get; set;}
     public Vector2Int occupiedSquare { get; set;}
     public TeamColor team { get; set;}
     public bool hasMoved { get; private set; }
@@ -19,17 +21,84 @@ public abstract class Piece : MonoBehaviour
 
     public abstract List<Vector2Int> SelectAvailableSquares();
 
+    // new implementation 
+    private Color originalColor; // Store the original color
+    public LineRenderer lineRenderer;
+    private Renderer pieceRenderer;
+    // Method to highlight the piece
+    public void HighlightPiece(Color highlightColor)
+    {
+        pieceRenderer.material.color = highlightColor; // Change to highlight color
+    }
+    public void RemoveHighlight()
+    {
+        pieceRenderer.material.color = originalColor; // Revert to original color
+    }
+    private void SetupLineRenderer()
+    {
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.positionCount = 2;
+        lineRenderer.startWidth = 0.05f;
+        lineRenderer.endWidth = 0.05f;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = Color.green;
+        lineRenderer.endColor = Color.green;
+        lineRenderer.enabled = false;
+    }
+    public void ShowGuidedRay()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        {
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, hitInfo.point);
+
+            // Change color based on validity
+            if (CanMoveTo(board.CalculateCoordsFromPosition(hitInfo.point)))
+            {
+                lineRenderer.startColor = Color.green;
+                lineRenderer.endColor = Color.green;
+            }
+            else
+            {
+                lineRenderer.startColor = Color.red;
+                lineRenderer.endColor = Color.red;
+            }
+        }
+        else
+        {
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, transform.position + Vector3.down * 10f);
+            lineRenderer.startColor = Color.red;
+            lineRenderer.endColor = Color.red;
+        }
+    }
+
+    // ...
     private void Awake(){
         availableMoves = new List<Vector2Int>();
         tweener = GetComponent<IObjectTweener>();
         materialSetter = GetComponent<MaterialSetter>();
         hasMoved = false;
+        // leap motion code :Sawaiz
+        pieceRenderer = GetComponent<Renderer>();
+        originalColor = pieceRenderer.material.color; // Save the original color
+        // Ensure the piece has a collider
+        if (GetComponent<Collider>() == null)
+        {
+            gameObject.AddComponent<BoxCollider>(); // Add a BoxCollider if none exists
+        }
+        // Initialize the LineRenderer
+        SetupLineRenderer();
+        // ...
     }
 
     public void SetMaterial(Material material){
         if (materialSetter == null)
             materialSetter = GetComponent<MaterialSetter>();
         materialSetter.SetSingleMaterial(material);
+        // Capture the assigned color
+        originalColor = material.color;
     }
 
     public bool IsFromSameTeam(Piece piece){
