@@ -126,6 +126,10 @@ public class Board : MonoBehaviour
     }
 
     private void SelectPiece(Piece piece){
+        if(selectedPiece != null)
+        {
+            selectedPiece.RemoveHighlight();
+        }
         chessController.RemoveMovesEnablingAttackOnPieceOfType<King>(piece);
         selectedPiece = piece;
         selectedPiece.HighlightPiece(Color.blue);
