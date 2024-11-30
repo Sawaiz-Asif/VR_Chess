@@ -45,6 +45,7 @@ public class Pawn : Piece
         int endOfBoardYCoordinate = team == TeamColor.White ? 7 : 0;
         if (occupiedSquare.y == endOfBoardYCoordinate){
             board.PromotePiece(this);
+            Destroy(this.gameObject);
         }
     }
 }
