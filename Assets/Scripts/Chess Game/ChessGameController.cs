@@ -19,6 +19,14 @@ public class ChessGameController : MonoBehaviour
     private ChessPlayer activePlayer;
     private GameState state;
 
+    private Vector3 WhiteOut = new Vector3(5, 0, -5);
+    private int WC = 0;
+    private Vector3 BlackOut = new Vector3(-5, 0, 5);
+    private int BC = 0;
+
+    [SerializeField] private DisplayTimer WhiteTimer;
+    [SerializeField] private DisplayTimer BlackTimer;
+
     private void Awake(){
         setDependencies();
         CreatePlayers();
@@ -74,7 +82,17 @@ public class ChessGameController : MonoBehaviour
         if (CheckIfGameIsFinished()){
             EndGame();
         } else {
+            if(activePlayer.team == TeamColor.White){
+                WhiteTimer.StopTimer();
+                BlackTimer.StartTimer();
+            }
+            else{
+                BlackTimer.StopTimer();
+                WhiteTimer.StartTimer();
+                
+            }
             ChangeActiveTeam();
+
         }
     }
 
@@ -137,6 +155,35 @@ public class ChessGameController : MonoBehaviour
     public void OnPieceRemoved(Piece piece){
         ChessPlayer pieceOwner = (piece.team == TeamColor.White) ? whitePlayer : blackPlayer;
         pieceOwner.RemovePiece(piece);
-        Destroy(piece.gameObject);
+        
+        Vector3 moveOut = new Vector3(0, 0, 0);
+
+        if(piece.team == TeamColor.White){
+            if(WC % 3 == 0){
+                moveOut = WhiteOut + 2 * Vector3.forward + Vector3.right;
+                WhiteOut = moveOut;
+                WC++;
+            }
+            else{
+                moveOut = WhiteOut + Vector3.back;
+                WhiteOut = moveOut;
+                WC++;
+            }
+            piece.transform.position = moveOut;
+        }
+        else{
+            if(BC % 3 == 0){
+                moveOut = BlackOut + 2 * Vector3.back + Vector3.left;
+                BlackOut = moveOut;
+                BC++;
+            }
+            else{
+                moveOut = BlackOut + Vector3.forward;
+                BlackOut = moveOut;
+                BC++;
+            }
+            piece.transform.position = moveOut;
+        }
+        
     }
 }
