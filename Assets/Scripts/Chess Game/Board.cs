@@ -51,9 +51,22 @@ public class Board : MonoBehaviour
     }
     // ...
 
-    private void Awake(){
+    public void Awake(){
+        Debug.Log("Board awake");
         squareSelector = GetComponent<SquareSelectorCreator>();
         CreateGrid();
+    }
+
+    private void Update(){
+        for (int i=0; i<8; i++){
+            for (int j=0; j<8; j++){
+                Piece piece = grid[i,j];
+                if (piece != null){
+                    // SetPieceOnBoard(piece.occupiedSquare, piece);
+                    piece.SetPosition(piece.occupiedSquare, this.transform.rotation);
+                }
+            }
+        }       
     }
 
     public void setDependencies(ChessGameController chessController){
@@ -65,7 +78,7 @@ public class Board : MonoBehaviour
     }
 
     public Vector3 CalculatePositionFromCoords(Vector2Int coords){
-        return bottomLeftSquareTransform.position + new Vector3(coords.x * squareSize, 0f, coords.y * squareSize);
+        return bottomLeftSquareTransform.position + new Vector3(coords.x * squareSize, 0.0f, coords.y * squareSize);
     }
 
     public Vector2Int CalculateCoordsFromPosition(Vector3 inputPosition){

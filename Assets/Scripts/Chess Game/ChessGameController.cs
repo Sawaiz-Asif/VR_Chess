@@ -19,7 +19,8 @@ public class ChessGameController : MonoBehaviour
     private ChessPlayer activePlayer;
     private GameState state;
 
-    private void Awake(){
+    public void Awake(){
+        Debug.Log("ChessGameContoller awake");
         setDependencies();
         CreatePlayers();
     }
@@ -33,13 +34,14 @@ public class ChessGameController : MonoBehaviour
         blackPlayer = new ChessPlayer(TeamColor.Black, board);
     }
 
-    void Start()
+    public void Start()
     {
         StartNewGame();        
     }
 
-    private void StartNewGame()
+    public void StartNewGame()
     {
+        Debug.Log("Game start");
         SetGameState(GameState.Init);
         board.setDependencies(this);
         CreatePiecesFromLayout(startingBoardLayout);
@@ -57,7 +59,7 @@ public class ChessGameController : MonoBehaviour
     }
     
     private void CreatePiecesFromLayout(BoardLayout layout){
-        
+        Debug.Log("Create Pieces");
         for (int i = 0; i < layout.GetPiecesCount(); i++){
             Vector2Int squareCoords = layout.GetSquareCoordsAtIndex(i);
             TeamColor team = layout.GetSquareTeamColorAtIndex(i);

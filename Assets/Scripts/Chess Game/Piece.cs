@@ -127,6 +127,11 @@ public abstract class Piece : MonoBehaviour
         transform.position = board.CalculatePositionFromCoords(coords);
     }
 
+    public void SetPosition(Vector2Int coords, Quaternion rotationinput){
+        transform.position = board.CalculatePositionFromCoords(coords);
+        transform.rotation = rotationinput;
+    }
+
     public bool IsAttackingPieceOfType<T>() where T : Piece {
         foreach (var square in availableMoves){
             if (board.GetPieceOnSquare(square) is T){
