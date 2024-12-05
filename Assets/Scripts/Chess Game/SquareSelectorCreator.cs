@@ -19,7 +19,7 @@ public class SquareSelectorCreator : MonoBehaviour
                 setter.SetSingleMaterial(data.Value ? freeSquareMaterial : opponentSquareMaterial);
             }
         }
-
+        
     }
     
     public void ClearSelection(){

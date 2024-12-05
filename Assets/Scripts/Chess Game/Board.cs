@@ -78,12 +78,12 @@ public class Board : MonoBehaviour
     }
 
     public Vector3 CalculatePositionFromCoords(Vector2Int coords){
-        return bottomLeftSquareTransform.position + new Vector3(coords.x * squareSize, 0.0f, coords.y * squareSize);
+        return this.transform.position + new Vector3((coords.x - 3.5f) * squareSize, 0.01f, (coords.y-3.5f) * squareSize);
     }
 
     public Vector2Int CalculateCoordsFromPosition(Vector3 inputPosition){
-        int x = Mathf.FloorToInt(inputPosition.x / squareSize) + 4;
-        int y = Mathf.FloorToInt(inputPosition.z / squareSize) + 4;
+        int x = Mathf.FloorToInt(inputPosition.x / squareSize) + 4; //can be adjuset
+        int y = Mathf.FloorToInt(inputPosition.z / squareSize) + 4; //can be adjuset
         return new Vector2Int(x, y);        
     }
 
@@ -92,8 +92,12 @@ public class Board : MonoBehaviour
             return;
         }
 
+        Debug.Log(inputPosition.x.ToString() + " " + inputPosition.z.ToString());
+
         Vector2Int coords = CalculateCoordsFromPosition(inputPosition);
         
+        Debug.Log(coords.x.ToString() + " " + coords.y.ToString());
+
         Piece piece = GetPieceOnSquare(coords);
         if(selectedPiece){
             if(piece != null && selectedPiece == piece){  // if piece is selected and trying to drop on the same location where piece was before :sawaiz
