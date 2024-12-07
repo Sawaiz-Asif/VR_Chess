@@ -116,6 +116,10 @@ public abstract class Piece : MonoBehaviour
         tweener.MoveTo(transform, targetPosition);
     }
 
+    public void ReMovePiece(Vector3 targetPosition){
+        tweener.MoveTo(transform, targetPosition);
+    }
+
     public void TryToAddMove(Vector2Int coords){
         availableMoves.Add(coords);
     }

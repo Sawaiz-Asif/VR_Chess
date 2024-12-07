@@ -178,7 +178,7 @@ public class ChessGameController : MonoBehaviour
                 WhiteOut = moveOut;
                 WC++;
             }
-            piece.transform.position = moveOut;
+            piece.ReMovePiece(moveOut);
         }
         else{
             if(BC % 3 == 0){
@@ -191,7 +191,7 @@ public class ChessGameController : MonoBehaviour
                 BlackOut = moveOut;
                 BC++;
             }
-            piece.transform.position = moveOut;
+            piece.ReMovePiece(moveOut);
         }
         
     }
