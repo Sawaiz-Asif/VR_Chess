@@ -35,9 +35,12 @@ public class DisplayTimer : MonoBehaviour
         isTimer = true;
     }
 
-    public void StopTimer(){
+    public void StopTimer(bool end){
         isTimer = false;
-        timer += 5.0f;                                  // 5sec increment
+        if (!end)
+        {
+            timer += 5.0f;                                  // 5sec increment
+        }
         DisplayTime();
     }
 

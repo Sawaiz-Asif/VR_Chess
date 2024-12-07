@@ -90,11 +90,11 @@ public class ChessGameController : MonoBehaviour
                 isFirstMove = false;
             }
             else if(activePlayer.team == TeamColor.White){
-                WhiteTimer.StopTimer();
+                WhiteTimer.StopTimer(false);
                 BlackTimer.StartTimer();
             }
             else{
-                BlackTimer.StopTimer();
+                BlackTimer.StopTimer(false);
                 WhiteTimer.StartTimer();
                 
             }
