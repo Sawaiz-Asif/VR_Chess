@@ -21,7 +21,6 @@ public class DisplayTimer : MonoBehaviour
         if(isTimer & timer >= 1.0f){
             timer -= Time.deltaTime;
             DisplayTime();
-            print(timer);
         }
     }
 

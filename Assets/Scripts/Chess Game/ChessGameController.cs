@@ -27,6 +27,8 @@ public class ChessGameController : MonoBehaviour
     [SerializeField] private DisplayTimer WhiteTimer;
     [SerializeField] private DisplayTimer BlackTimer;
 
+    bool isFirstMove = true;
+
     private void Awake(){
         setDependencies();
         CreatePlayers();
@@ -82,7 +84,12 @@ public class ChessGameController : MonoBehaviour
         if (CheckIfGameIsFinished()){
             EndGame();
         } else {
-            if(activePlayer.team == TeamColor.White){
+            if (isFirstMove)
+            {
+                BlackTimer.StartTimer();
+                isFirstMove = false;
+            }
+            else if(activePlayer.team == TeamColor.White){
                 WhiteTimer.StopTimer();
                 BlackTimer.StartTimer();
             }
@@ -116,6 +123,8 @@ public class ChessGameController : MonoBehaviour
 
     private void EndGame(){
         Debug.Log("Game Ended");
+        WhiteTimer.StopTimer(true);
+        BlackTimer.StopTimer(true);
         SetGameState(GameState.Finished);
     }
 
