@@ -7,8 +7,10 @@ public class DisplayTimer : MonoBehaviour
 {
     public TMP_Text textTimer;
 
-    private float timer = 600.0f;                                   // 10 minutes
+    private float timer = 5.0f;                                   // 10 minutes
     private bool isTimer = false;
+
+    public bool timeIsUp = false;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +23,9 @@ public class DisplayTimer : MonoBehaviour
         if(isTimer & timer >= 1.0f){
             timer -= Time.deltaTime;
             DisplayTime();
+        }
+        else if(!(timer >= 1.0f)) {
+            timeIsUp = true;
         }
     }
 

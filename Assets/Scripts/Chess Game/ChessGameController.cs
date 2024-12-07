@@ -118,6 +118,11 @@ public class ChessGameController : MonoBehaviour
                 }
             }
         }
+
+        if (BlackTimer.timeIsUp == true || WhiteTimer.timeIsUp == true)
+        {
+            return true;
+        }
         return false;
     }
 
